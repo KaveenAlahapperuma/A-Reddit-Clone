@@ -6,7 +6,7 @@ pipeline {
     environment {
 		JAVA_HOME = '/usr/lib/jvm/temurin-21-jdk-amd64'
         SCANNER_HOME = tool 'sonar-scanner'
-        APP_NAME = "reddit-clone-pipeline"
+        APP_NAME = "reddit-clone-app"
         RELEASE = "1.0.0"
         DOCKER_USER = "kaveend4"
         DOCKER_PASS = 'dockerhub'
