@@ -139,6 +139,48 @@ This gave a live view of how the cluster behaved during deployments, for example
 
 ---
 
+## Troubleshooting & Challenges
+
+### 1. Jenkins: passing `IMAGE_TAG` from CI to CD
+
+**Problem:** The CD pipeline failed with:
+
+```
+groovy.lang.MissingPropertyException: No such property: IMAGE_TAG
+```
+
+**Cause:** The CI job sends the new image tag to the separate CD job, but the CD job wasn't receiving or reading the parameter correctly.
+
+**Fix:** Configured `Reddit-Clone-CD` as a parameterised job with an `IMAGE_TAG` string parameter, and had the CI job pass it through the Jenkins remote API (`buildWithParameters?...` with `IMAGE_TAG=${IMAGE_TAG}`). The CD job then uses the same tag the CI job pushed to Docker Hub.
+
+**Learned:** How Jenkins jobs pass build parameters to each other, and why the same image version must flow through the whole pipeline.
+
+### 2. Kubernetes: immutable selector error after a tag update
+
+**Problem:** After the CD job updated `deployment.yaml`, the deployment failed with an immutable-field error.
+
+**Cause:** The `sed` command used to swap the image tag was too broad. It also changed the Deployment's selector and labels, and Kubernetes does not allow `spec.selector` to change on an existing Deployment.
+
+**Fix:** Narrowed the `sed` pattern so it only matches the container image line:
+
+```bash
+sed -i 's|image: kaveend4/${APP_NAME}:.*|image: kaveend4/${APP_NAME}:${IMAGE_TAG}|' deployment.yaml
+```
+
+**Learned:** Deployment selectors must stay stable, and automated manifest edits should target only the field that needs to change.
+
+### 3. ArgoCD: `504 Gateway Timeout` through Ingress
+
+**Problem:** ArgoCD was first exposed through a Kubernetes Ingress (`argocd-server-ingress`). The Ingress received an AWS load balancer address, but opening ArgoCD returned `504 Gateway Timeout`.
+
+**Investigation:** Followed the traffic path step by step (AWS load balancer → Ingress → `argocd-server` Service → ArgoCD pod) with `kubectl describe ingress`, checking the Service and backend configuration.
+
+**Outcome:** The final working setup exposed `argocd-server` through a `LoadBalancer` Service instead, which is how ArgoCD was accessed in the screenshots above.
+
+**Learned:** How requests travel from an AWS load balancer through Kubernetes networking to a pod, and how to debug each hop.
+
+---
+
 ## Why Two Repositories?
 
 - **Separation of concerns:** application code and deployment configuration change for different reasons and at different rates.
@@ -220,14 +262,14 @@ CPU usage and quota per workload, with Prometheus as the data source.
 
 ## Future Improvements
 
-- Make the Quality Gate and Trivy scans **fail the build** on critical issues instead of only reporting them
-- Fix the security issues SonarQube reported
-- Use a **multi-stage Dockerfile** with a production build (`next build` + `next start`) on a current Node LTS image
-- Secure the CI → CD trigger (HTTPS, no hardcoded server address)
-- Add readiness/liveness probes and memory limits to the Kubernetes Deployment
-- Add Grafana **alerting** rules (e.g. pod restarts, high CPU)
-- Provision the infrastructure with **Terraform**
-- Use an Ingress controller instead of one LoadBalancer per service
+- **Enforce security gates:** Configure the SonarQube Quality Gate and Trivy scans to fail the pipeline when defined security thresholds are exceeded.
+- **Remediate security findings:** Investigate and fix the relevant issues reported by SonarQube and Trivy.
+- **Improve containerization:** Use a multi-stage Dockerfile with a production build (`next build` and `next start`) and a supported Node.js LTS image.
+- **Secure pipeline integration:** Use HTTPS where appropriate and secure the Jenkins CI-to-CD trigger without hardcoded server addresses or exposed credentials.
+- **Improve Kubernetes reliability:** Configure readiness and liveness probes, resource requests, and memory limits.
+- **Add proactive alerting:** Configure Grafana alerting rules for high CPU usage, pod restarts, and other important cluster-health indicators.
+- **Automate infrastructure provisioning:** Use Terraform to provision and manage the AWS infrastructure as code.
+- **Improve traffic management:** Replace separate `LoadBalancer` Services with an appropriately configured Ingress controller to reduce unnecessary load balancers and centralize routing.
 
 ---
 
