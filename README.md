@@ -13,6 +13,10 @@ An end-to-end DevOps pipeline that takes a Next.js Reddit clone from a GitHub co
 
 ## Architecture
 
+![AWS architecture](screenshots/aws-architecture.png)
+
+**Pipeline flow (simplified):**
+
 ```
  Developer
     │  git push
