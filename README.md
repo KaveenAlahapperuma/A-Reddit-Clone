@@ -210,44 +210,44 @@ sed -i 's|image: kaveend4/${APP_NAME}:.*|image: kaveend4/${APP_NAME}:${IMAGE_TAG
 ### Jenkins: CI and CD pipelines
 Both pipelines passing: `Reddit-Clone-CI` (build #20) and `Reddit-Clone-CD` (build #4).
 
-![Jenkins](screenshots/jenkins.png)
+![Jenkins](screenshots/Jenkins.png)
 
 ### SonarQube: code analysis
 Quality Gate passed on ~4.5k lines of TypeScript/CSS.
 
-![SonarQube](screenshots/sonarqube.png)
+![SonarQube](screenshots/SonarQube.png)
 
 ### Docker Hub: versioned images
 Each CI build pushes a `1.0.0-<build>` tag plus `latest`.
 
-![Docker Hub](screenshots/dockerhub.png)
+![Docker Hub](screenshots/Docker.png)
 
 ### ArgoCD: application synced and healthy
 Auto-sync enabled, tracking `HEAD` of the GitOps repo.
 
-![ArgoCD apps](screenshots/argocd-apps.png)
+![ArgoCD apps](screenshots/Argocd-1.png)
 
 ### ArgoCD: resource tree
 Service, Deployment, three ReplicaSet revisions and the running pod.
 
-![ArgoCD tree](screenshots/argocd-tree.png)
+![ArgoCD tree](screenshots/Argocd-2.png)
 
 ### Grafana: Kubernetes compute resources
 CPU usage and quota per workload, with Prometheus as the data source.
 
-![Grafana](screenshots/grafana.png)
+![Grafana](screenshots/Grafana.png)
 
 ### AWS: EKS cluster
-![EKS cluster](screenshots/eks-cluster.png)
+![EKS cluster](screenshots/EKS%20inside.png)
 
 ### AWS: CloudFormation stacks created by eksctl
-![CloudFormation](screenshots/cloudformation.png)
+![CloudFormation](screenshots/CloudFormation.png)
 
 ### AWS: EC2 instances (Jenkins/SonarQube server + 3 worker nodes)
-![EC2](screenshots/ec2-instances.png)
+![EC2](screenshots/Instances.png)
 
 ### AWS: Load balancers (app, ArgoCD, Prometheus, Grafana)
-![Load balancers](screenshots/load-balancers.png)
+![Load balancers](screenshots/LBs.png)
 
 ---
 
